@@ -2,6 +2,7 @@
 local doubletap, doubletap_state = ui.reference( "Rage", "Other", "Double tap" )
 local lby_target = ui.reference( "AA", "Anti-aimbot angles", "Lower body yaw target" )
 local limit = ui.reference( "AA", "Fake lag", "Limit" )
+local pitch = ui.reference( "AA", "Anti-aimbot angles", "Pitch" )
 
 -- [x]==[ Requires ]==[x]
 local ffi = require "ffi"
@@ -119,7 +120,7 @@ client.set_event_callback( "setup_command", function( cmd )
 		-- Sorryyy...
 		local scoped = entity.get_prop( entity.get_local_player( ), "m_bIsScoped" )
 		if scoped then
-			if ( stored == globals.tickcount( ) or stored + 1 == globals.tickcount( ) ) and force_update then
+			if ( globals.tickcount( ) >= stored + 1 ) and force_update then
 				cmd.forwardmove = 450
 				if stored + 1 == globals.tickcount( ) then
 					force_update = false
@@ -140,7 +141,15 @@ client.set_event_callback( "setup_command", function( cmd )
 	end
 	
 	if next_lby_update( cmd ) and ui.get( lby_target ) == "Off" then
-		cmd.pitch = 89 -- Issue with setting yaw on network update
+		if ui.get( pitch ) ~= "Off" then
+			if ui.get( pitch ) == "Up" then
+				cmd.pitch = -90
+			elseif ui.get( pitch ) == "Down" then
+				cmd.pitch = 90
+			else
+				cmd.pitch = 89
+			end
+		end
 		cmd.yaw = normalize_as_yaw( eye_angles.y + ( 60 * fake_side ) )
 	end
 end )
